@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+main() {
+  borderColor=white
+  borderWidth=2
+
+  positionalArgs=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -c)
+        borderColor="$2"
+        shift 2
+        ;;
+      -w)
+        borderWidth="$2"
+        shift 2
+        ;;
+      -r)
+        aspectRatio="$2"
+        shift 2
+        ;;        
+      -h)
+        usage
+        exit 0
+        ;;
+      -*)
+        echo "Unknown option $1"
+        echo
+        usage
+        exit 1
+        ;;
+      *)
+        positionalArgs+=("$1")
+        shift
+        ;;
+    esac
+  done
+  set -- "${positionalArgs[@]}" 
+
+  filepath="$1"
+
+  width=$(magick identify -ping -format '%w' "$filepath")
+  height=$(magick identify -ping -format '%h' "$filepath")
+  factor=$(bc -l <<< "$width / $height")
+
+  x="${aspectRatio%x*}"
+  x="${x:-$width}"
+  y="${aspectRatio#*x}"
+  y="${y:-$height}"
+  factor2=$(bc -l <<< "$x / $y")
+
+  factorFactor=$(bc -l <<< "$factor2 / $factor * 100")
+  factorFactor="${factorFactor%.*}" # floor
+
+  borderFactor=$(bc -l <<< "1 + $borderWidth / 100")
+
+  if ((factorFactor > 100)); then # new aspect ratio is wider
+    height2=$(bc -l <<< "$height * $borderFactor")
+    width2=$(bc -l <<< "$height2 * $factor2")
+  else # new aspect ratio is taller
+    width2=$(bc -l <<< "$width * $borderFactor")
+    height2=$(bc -l <<< "$width2 / $factor2")
+  fi
+
+  width2="${width2%.*}"   # floor
+  height2="${height2%.*}" # floor
+
+  filename=$(basename -- "$filepath")
+  filenameBase="${filename%.*}"
+  filenameExtension="${filename##*.}"
+  filename2="${filenameBase}_${aspectRatio}b.${filenameExtension}"
+
+  magick "$filepath" -gravity Center -size "${width2}x${height2}" "xc:${borderColor}" +swap -composite "$filename2"
+  echo "Created $filename2"
+}
+
+usage() {
+  b=$(tput bold)
+  u=$(tput smul)
+  n=$(tput sgr0)
+
+  echo "${b}${u}BORDER${n}"
+  echo "Adds a border to an image, and, optionally, converts the image to a different aspect ratio."
+  echo
+  echo "Usage: border [${b}-c${n} ${u}color${n}] [${b}-w${n} ${u}width${n}] [${b}-r${n} ${u}w${n}x${u}h${n}] ${u}file${n}"
+  echo
+  echo "Options:"
+  echo "  ${b}-c${n} ${u}color${n}"
+  echo "        Color of the border."
+  echo "        Optional, default: white."
+  echo "  ${b}-w${n} ${u}width${n}"
+  echo "        Minimal width of the border, as a percentage of the original height (if the new aspect ratio is wider"
+  echo "        than the original one) or the original width (if the new aspect ratio is taller than the original one)."
+  echo "        Optional, default: 2."
+  echo "  ${b}-r${n} ${u}w${n}x${u}h${n}"
+  echo "        Aspect ratio of the new image in the format ${u}w${n}x${u}h${n}, for example: 2x3."
+  echo "        Optional, default: unchanged."
+}
+
+if ! [ -x "$(command -v magick)" ]; then
+  echo "Error: ImageMagick is not installed"
+  exit 1
+fi
+
+if ! [ -x "$(command -v bc)" ]; then
+  echo "Error: bc is not installed"
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  usage
+  exit 1
+fi
+
+main "$@"
