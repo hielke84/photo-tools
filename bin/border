@@ -47,31 +47,28 @@ main() {
   x="${x:-$width}"
   y="${aspectRatio#*x}"
   y="${y:-$height}"
-  factor2=$(bc -l <<< "$x / $y")
+  factorNew=$(bc -l <<< "$x / $y")
 
-  factorFactor=$(bc -l <<< "$factor2 / $factor * 100")
+  factorFactor=$(bc -l <<< "$factorNew / $factor * 100")
   factorFactor="${factorFactor%.*}" # floor
 
-  borderFactor=$(bc -l <<< "1 + $borderWidth / 100")
+  borderFactor=$(bc -l <<< "$borderWidth / 100")
 
   if ((factorFactor > 100)); then # new aspect ratio is wider
-    height2=$(bc -l <<< "$height * $borderFactor")
-    width2=$(bc -l <<< "$height2 * $factor2")
+    heightNew=$(bc -l <<< "$height * (1 + 2 * $borderFactor)")
+    widthNew=$(bc -l <<< "$heightNew * $factorNew")
   else # new aspect ratio is taller
-    width2=$(bc -l <<< "$width * $borderFactor")
-    height2=$(bc -l <<< "$width2 / $factor2")
+    widthNew=$(bc -l <<< "$width * (1 + 2 * $borderFactor)")
+    heightNew=$(bc -l <<< "$widthNew / $factorNew")
   fi
-
-  width2="${width2%.*}"   # floor
-  height2="${height2%.*}" # floor
 
   filename=$(basename -- "$filepath")
   filenameBase="${filename%.*}"
   filenameExtension="${filename##*.}"
-  filename2="${filenameBase}_${aspectRatio}b.${filenameExtension}"
+  filenameNew="${filenameBase}_${aspectRatio}b.${filenameExtension}"
 
-  magick "$filepath" -gravity Center -size "${width2}x${height2}" "xc:${borderColor}" +swap -composite "$filename2"
-  echo "Created $filename2"
+  magick "$filepath" -gravity Center -size "${widthNew}x${heightNew}" "xc:${borderColor}" +swap -composite "$filenameNew"
+  echo "Created $filenameNew"
 }
 
 usage() {
