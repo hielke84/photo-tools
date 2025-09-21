@@ -65,30 +65,28 @@ main() {
   if ((factorAvg > 100)); then
     # landscape tiles, portrait collage
     tile="1x2"
+    geometry="${minWidth}x"
 
     y0=$(bc -l <<< "2 * $minHeight")
     y="${y:-$y0}"
     x="${x:-$minWidth}"
     factorNew=$(bc -l <<< "$x / $y")
 
-    tileWidth=$minWidth
-    totalWidth=$(bc -l <<< "scale=0; $tileWidth * (1 + 2 * $borderFactor)")
+    totalWidth=$(bc -l <<< "scale=0; $minWidth * (1 + 2 * $borderFactor)")
     totalHeight=$(bc -l <<< "scale=0; $totalWidth / $factorNew")
-    tileHeight=$(bc -l <<< "scale=0; 0.5 * $totalHeight / (1 + 2 * $borderFactor)")
     borderWidth=$(bc -l <<< "scale=0; $totalHeight * $borderFactor / 1")
   else
     # portrait tiles, landscape collage
     tile="2x1"
+    geometry="x${minHeight}"
 
     x0=$(bc -l <<< "2 * $minWidth")
     x="${x:-$x0}"
     y="${y:-$minHeight}"
     factorNew=$(bc -l <<< "$x / $y")
 
-    tileHeight=$minHeight
-    totalHeight=$(bc -l <<< "scale=0; $tileHeight * (1 + 2 * $borderFactor)")
+    totalHeight=$(bc -l <<< "scale=0; $minHeight * (1 + 2 * $borderFactor)")
     totalWidth=$(bc -l <<< "scale=0; $totalHeight * $factorNew")
-    tileWidth=$(bc -l <<< "scale=0; 0.5 * $totalWidth / (1 + 2 * $borderFactor)")
     borderWidth=$(bc -l <<< "scale=0; $totalWidth * $borderFactor / 1")
   fi
 
@@ -97,9 +95,13 @@ main() {
   filenameBase1="${filename1%.*}"
   filenameBase2="${filename2%.*}"
   filenameExtension="${filename1##*.}"
-  filenameNew="${filenameBase1}+${filenameBase2}${aspectRatio:+_aspectRatio}.${filenameExtension}"
+  filenameNew="${filenameBase1}+${filenameBase2}${aspectRatio:+_$aspectRatio}.${filenameExtension}"
 
-  magick montage "$filepath1" "$filepath2" -tile "$tile" -geometry "${tileWidth}x${tileHeight}>+${borderWidth}+${borderWidth}" -background "${borderColor}" "${filenameNew}"
+  magick montage "$filepath1" "$filepath2" \
+    -tile "$tile" \
+    -geometry "${geometry}>+${borderWidth}+${borderWidth}" \
+    -background "${borderColor}" \
+    "${filenameNew}"
   echo "Created $filenameNew"
 }
 
