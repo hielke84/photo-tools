@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+main() {
+  borderColor=white
+  borderPercentage=2
+
+  positionalArgs=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -c)
+        borderColor="$2"
+        shift 2
+        ;;
+      -r)
+        aspectRatio="$2"
+        shift 2
+        ;;        
+      -w)
+        borderPercentage="$2"
+        shift 2
+        ;;        
+      -*)
+        echo "Unknown option $1"
+        echo
+        usage
+        exit 1
+        ;;
+      *)
+        positionalArgs+=("$1")
+        shift
+        ;;
+    esac
+  done
+  set -- "${positionalArgs[@]}" 
+
+  filepath1="$1"
+  filepath2="$2"
+
+  width1=$(magick identify -ping -format '%w' "$filepath1")
+  height1=$(magick identify -ping -format '%h' "$filepath1")
+  factor1=$(bc -l <<< "$width1 / $height1")
+
+  width2=$(magick identify -ping -format '%w' "$filepath2")
+  height2=$(magick identify -ping -format '%h' "$filepath2")
+  factor2=$(bc -l <<< "$width2 / $height2")
+
+  factorAvg=$(bc -l <<< "scale=0; 100 * ($factor1 + $factor2) / 2")
+
+  if ((width1 < width2)); then
+    minWidth="$width1"
+  else 
+    minWidth="$width2"
+  fi
+
+  if ((height1 < height2)); then
+    minHeight="$height1"
+  else 
+    minHeight="$height2"
+  fi
+
+  borderFactor=$(bc -l <<< "$borderPercentage / 100")
+  x="${aspectRatio%x*}"
+  y="${aspectRatio#*x}"
+
+  if ((factorAvg > 100)); then
+    # landscape tiles, portrait collage
+    tile="1x2"
+
+    y0=$(bc -l <<< "2 * $minHeight")
+    y="${y:-$y0}"
+    x="${x:-$minWidth}"
+    factorNew=$(bc -l <<< "$x / $y")
+
+    tileWidth=$minWidth
+    totalWidth=$(bc -l <<< "scale=0; $tileWidth * (1 + 2 * $borderFactor)")
+    totalHeight=$(bc -l <<< "scale=0; $totalWidth / $factorNew")
+    tileHeight=$(bc -l <<< "scale=0; 0.5 * $totalHeight / (1 + 2 * $borderFactor)")
+    borderWidth=$(bc -l <<< "scale=0; $totalHeight * $borderFactor / 1")
+  else
+    # portrait tiles, landscape collage
+    tile="2x1"
+
+    x0=$(bc -l <<< "2 * $minWidth")
+    x="${x:-$x0}"
+    y="${y:-$minHeight}"
+    factorNew=$(bc -l <<< "$x / $y")
+
+    tileHeight=$minHeight
+    totalHeight=$(bc -l <<< "scale=0; $tileHeight * (1 + 2 * $borderFactor)")
+    totalWidth=$(bc -l <<< "scale=0; $totalHeight * $factorNew")
+    tileWidth=$(bc -l <<< "scale=0; 0.5 * $totalWidth / (1 + 2 * $borderFactor)")
+    borderWidth=$(bc -l <<< "scale=0; $totalWidth * $borderFactor / 1")
+  fi
+
+  filename1=$(basename -- "$filepath1")
+  filename2=$(basename -- "$filepath2")
+  filenameBase1="${filename1%.*}"
+  filenameBase2="${filename2%.*}"
+  filenameExtension="${filename1##*.}"
+  filenameNew="${filenameBase1}+${filenameBase2}${aspectRatio:+_aspectRatio}.${filenameExtension}"
+
+  magick montage "$filepath1" "$filepath2" -tile "$tile" -geometry "${tileWidth}x${tileHeight}>+${borderWidth}+${borderWidth}" -background "${borderColor}" "${filenameNew}"
+  echo "Created $filenameNew"
+}
+
+usage() {
+  b=$(tput bold)
+  u=$(tput smul)
+  n=$(tput sgr0)
+  
+  echo "${b}${u}COLLAGE$n"
+  echo "Combines two images into a collage, separated and surrounded by a border. Portrait images will result in a landscape"
+  echo "(horizontal) collage, and landscape images result in a portrait (vertical) collage."
+  echo
+  echo "Usage: $0 [${b}-c${n} ${u}color${n}] [${b}-w${n} ${u}width${n}] [${b}-r${n} ${u}w${n}x${u}h${n}] ${u}file${n}"
+  echo
+  echo "Options:"
+  echo "  ${b}-c${n} ${u}color${n}"
+  echo "        Color of the border."
+  echo "        Optional, default: white."
+  echo "  ${b}-w${n} ${u}width${n}"
+  echo "        Minimal width of the outer border, as a percentage of the original height (in case of a landscape collage)"
+  echo "        or the original width (in case of a portrait one)."
+  echo "        Optional, default: 2."
+  echo "  ${b}-r${n} ${u}w${n}x${u}h${n}"
+  echo "        Aspect ratio of the new image in the format ${u}w${n}x${u}h${n}, for example: 2x3."
+  echo "        Optional, default: unchanged."
+}
+
+if ! [ -x "$(command -v magick)" ]; then
+  echo "Error: ImageMagick is not installed"
+  exit 1
+fi
+
+if ! [ -x "$(command -v bc)" ]; then
+  echo "Error: bc is not installed"
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  usage
+  exit 1
+fi
+
+main "$@"
