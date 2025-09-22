@@ -38,13 +38,13 @@ main() {
 
   width1=$(magick identify -ping -format '%w' "$filepath1")
   height1=$(magick identify -ping -format '%h' "$filepath1")
-  factor1=$(bc -l <<< "$width1 / $height1")
+  factor1=$(calc "$width1 / $height1")
 
   width2=$(magick identify -ping -format '%w' "$filepath2")
   height2=$(magick identify -ping -format '%h' "$filepath2")
-  factor2=$(bc -l <<< "$width2 / $height2")
+  factor2=$(calc "$width2 / $height2")
 
-  factorAvg=$(bc -l <<< "scale=0; 100 * ($factor1 + $factor2) / 2")
+  factorAvg=$(calcInt "100 * ($factor1 + $factor2) / 2")
 
   if ((width1 < width2)); then
     minWidth="$width1"
@@ -58,7 +58,7 @@ main() {
     minHeight="$height2"
   fi
 
-  borderFactor=$(bc -l <<< "$borderPercentage / 100")
+  borderFactor=$(calc "$borderPercentage / 100")
   x="${aspectRatio%x*}"
   y="${aspectRatio#*x}"
 
@@ -67,27 +67,27 @@ main() {
     tile="1x2"
     geometry="${minWidth}x"
 
-    y0=$(bc -l <<< "2 * $minHeight")
+    y0=$(calcInt "2 * $minHeight")
     y="${y:-$y0}"
     x="${x:-$minWidth}"
-    factorNew=$(bc -l <<< "$x / $y")
+    factorNew=$(calc "$x / $y")
 
-    totalWidth=$(bc -l <<< "scale=0; $minWidth * (1 + 2 * $borderFactor)")
-    totalHeight=$(bc -l <<< "scale=0; $totalWidth / $factorNew")
-    borderWidth=$(bc -l <<< "scale=0; $totalHeight * $borderFactor / 1")
+    totalWidth=$(calcInt "$minWidth * (1 + 2 * $borderFactor)")
+    totalHeight=$(calcInt "$totalWidth / $factorNew")
+    borderWidth=$(calcInt "$totalHeight * $borderFactor")
   else
     # portrait tiles, landscape collage
     tile="2x1"
     geometry="x${minHeight}"
 
-    x0=$(bc -l <<< "2 * $minWidth")
+    x0=$(calcInt "2 * $minWidth")
     x="${x:-$x0}"
     y="${y:-$minHeight}"
-    factorNew=$(bc -l <<< "$x / $y")
+    factorNew=$(calc "$x / $y")
 
-    totalHeight=$(bc -l <<< "scale=0; $minHeight * (1 + 2 * $borderFactor)")
-    totalWidth=$(bc -l <<< "scale=0; $totalHeight * $factorNew")
-    borderWidth=$(bc -l <<< "scale=0; $totalWidth * $borderFactor / 1")
+    totalHeight=$(calcInt "$minHeight * (1 + 2 * $borderFactor)")
+    totalWidth=$(calcInt "$totalHeight * $factorNew")
+    borderWidth=$(calcInt "$totalWidth * $borderFactor")
   fi
 
   filename1=$(basename -- "$filepath1")
@@ -103,6 +103,16 @@ main() {
     -background "${borderColor}" \
     "${filenameNew}"
   echo "Created $filenameNew"
+}
+
+calc() {
+  result=$(bc -l <<< "$1")
+  echo "$result"
+}
+
+calcInt() {
+  result=$(calc "scale=0; ($1) / 1")
+  echo "$result"
 }
 
 usage() {
