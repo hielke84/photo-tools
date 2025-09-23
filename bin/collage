@@ -44,7 +44,7 @@ main() {
   height2=$(magick identify -ping -format '%h' "$filepath2")
   factor2=$(calc "$width2 / $height2")
 
-  factorAvg=$(calcInt "100 * ($factor1 + $factor2) / 2")
+  factorAvg=$(calc "($factor1 + $factor2) / 2")
 
   if ((width1 < width2)); then
     minWidth="$width1"
@@ -62,7 +62,7 @@ main() {
   x="${aspectRatio%x*}"
   y="${aspectRatio#*x}"
 
-  if ((factorAvg > 100)); then
+  if (( $(calc "$factorAvg > 1") )); then
     # landscape tiles, portrait collage
     tile="1x2"
     geometry="${minWidth}x"

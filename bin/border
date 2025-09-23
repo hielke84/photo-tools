@@ -43,16 +43,15 @@ main() {
   height=$(magick identify -ping -format '%h' "$filepath")
   factor=$(calc "$width / $height")
 
+  borderFactor=$(calc "$borderWidth / 100")
+  
   x="${aspectRatio%x*}"
   x="${x:-$width}"
   y="${aspectRatio#*x}"
   y="${y:-$height}"
   factorNew=$(calc "$x / $y")
 
-  factorFactor=$(calcInt "100 * $factorNew / $factor")
-  borderFactor=$(calc "$borderWidth / 100")
-
-  if ((factorFactor > 100)); then # new aspect ratio is wider
+  if (( $(calc "$factorNew / $factor > 1") )); then # new aspect ratio is wider
     heightNew=$(calcInt "$height * (1 + 2 * $borderFactor)")
     widthNew=$(calcInt "$heightNew * $factorNew")
   else # new aspect ratio is taller
