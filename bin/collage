@@ -10,11 +10,7 @@ main() {
       -c)
         borderColor="$2"
         shift 2
-        ;;
-      -r)
-        aspectRatio="$2"
-        shift 2
-        ;;        
+        ;;      
       -w)
         borderPercentage="$2"
         shift 2
@@ -31,7 +27,7 @@ main() {
         ;;
     esac
   done
-  set -- "${positionalArgs[@]}" 
+  set -- "${positionalArgs[@]}"
 
   filepath1="$1"
   filepath2="$2"
@@ -47,47 +43,28 @@ main() {
   factorAvg=$(calc "($factor1 + $factor2) / 2")
 
   if ((width1 < width2)); then
-    minWidth="$width1"
-  else 
-    minWidth="$width2"
+    tileWidth="$width1"
+  else
+    tileWidth="$width2"
   fi
 
   if ((height1 < height2)); then
-    minHeight="$height1"
-  else 
-    minHeight="$height2"
+    tileHeight="$height1"
+  else
+    tileHeight="$height2"
   fi
 
+  geometry="${tileWidth}x${tileHeight}"
   borderFactor=$(calc "$borderPercentage / 100")
-  x="${aspectRatio%x*}"
-  y="${aspectRatio#*x}"
 
   if (( $(calc "$factorAvg > 1") )); then
     # landscape tiles, portrait collage
     tile="1x2"
-    geometry="${minWidth}x"
-
-    y0=$(calcInt "2 * $minHeight")
-    y="${y:-$y0}"
-    x="${x:-$minWidth}"
-    factorNew=$(calc "$x / $y")
-
-    totalWidth=$(calcInt "$minWidth * (1 + 2 * $borderFactor)")
-    totalHeight=$(calcInt "$totalWidth / $factorNew")
-    borderWidth=$(calcInt "$totalHeight * $borderFactor")
+    borderWidth=$(calcInt "$tileWidth * $borderFactor")
   else
     # portrait tiles, landscape collage
     tile="2x1"
-    geometry="x${minHeight}"
-
-    x0=$(calcInt "2 * $minWidth")
-    x="${x:-$x0}"
-    y="${y:-$minHeight}"
-    factorNew=$(calc "$x / $y")
-
-    totalHeight=$(calcInt "$minHeight * (1 + 2 * $borderFactor)")
-    totalWidth=$(calcInt "$totalHeight * $factorNew")
-    borderWidth=$(calcInt "$totalWidth * $borderFactor")
+    borderWidth=$(calcInt "$tileHeight * $borderFactor")
   fi
 
   filename1=$(basename -- "$filepath1")
@@ -119,7 +96,7 @@ usage() {
   b=$(tput bold)
   u=$(tput smul)
   n=$(tput sgr0)
-  
+ 
   echo "${b}${u}COLLAGE$n"
   echo "Combines two images into a collage, separated and surrounded by a border. Portrait images will result in a landscape"
   echo "(horizontal) collage, and landscape images result in a portrait (vertical) collage."
@@ -134,9 +111,6 @@ usage() {
   echo "        Minimal width of the outer border, as a percentage of the original height (in case of a landscape collage)"
   echo "        or the original width (in case of a portrait one)."
   echo "        Optional, default: 2."
-  echo "  ${b}-r${n} ${u}w${n}x${u}h${n}"
-  echo "        Aspect ratio of the new image in the format ${u}w${n}x${u}h${n}, for example: 2x3."
-  echo "        Optional, default: unchanged."
 }
 
 if ! [ -x "$(command -v magick)" ]; then

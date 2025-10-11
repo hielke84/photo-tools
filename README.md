@@ -38,9 +38,6 @@ Options:
         Minimal width of the outer border, as a percentage of the original height (in case of a landscape collage)
         or the original width (in case of a portrait one).
         Optional, default: 2.
-  -r wxh
-        Aspect ratio of the new image in the format wxh, for example: 2x3.
-        Optional, default: unchanged.
 ```
 
 ## Installation
