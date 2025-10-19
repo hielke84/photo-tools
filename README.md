@@ -4,7 +4,7 @@ A collection of photography-related command line utilities.
 
 ### Border
 
-```
+```text
 Adds a border to an image, and, optionally, converts the image to a different aspect ratio.
 
 Usage: border [-c color] [-w width] [-r wxh] file
@@ -24,19 +24,26 @@ Options:
 
 ### Collage
 
-```
-Combines two images into a collage, separated and surrounded by a border. Portrait images will result in a landscape
-(horizontal) collage, and landscape images result in a portrait (vertical) collage.
+```text
+Combines two images into a collage, separated and surrounded by a border.
 
 Usage: ../bin/collage [-c color] [-w width] [-r wxh] file
 
 Options:
+  -h
+        Make a horizontal collage.
+  -v
+        Make a vertical collage.
+
+  If -h and -v are not set, portrait images will result in a horizontal collage, and landscape images in a
+  vertical one.
+
   -c color
         Color of the border.
         Optional, default: white.
   -w width
-        Minimal width of the outer border, as a percentage of the original height (in case of a landscape collage)
-        or the original width (in case of a portrait one).
+        Minimal width of the outer border, as a percentage of the original height (in case of a horizontal collage)
+        or the original width (in case of a vertical one).
         Optional, default: 2.
 ```
 
