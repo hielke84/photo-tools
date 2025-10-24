@@ -51,10 +51,12 @@ main() {
   y="${y:-$height}"
   factorNew=$(calc "$x / $y")
 
-  if (( $(calc "$factorNew / $factor > 1") )); then # new aspect ratio is wider
+  if (( $(calc "$factorNew / $factor > 1") )); then 
+    # new aspect ratio is wider
     heightNew=$(calcInt "$height * (1 + 2 * $borderFactor)")
     widthNew=$(calcInt "$heightNew * $factorNew")
-  else # new aspect ratio is taller
+  else 
+    # new aspect ratio is taller
     widthNew=$(calcInt "$width * (1 + 2 * $borderFactor)")
     heightNew=$(calcInt "$widthNew / $factorNew")
   fi
@@ -88,22 +90,24 @@ usage() {
   u=$(tput smul)
   n=$(tput sgr0)
 
-  echo "${b}${u}BORDER${n}"
-  echo "Adds a border to an image, and, optionally, converts the image to a different aspect ratio."
+  echo "Adds a border to an image, and, optionally, converts the image to a different"
+  echo "aspect ratio."
   echo
-  echo "Usage: $0 [${b}-c${n} ${u}color${n}] [${b}-w${n} ${u}width${n}] [${b}-r${n} ${u}w${n}x${u}h${n}] ${u}file${n}"
+  echo "${b}${u}Usage:${n} ${b}$(basename "$0")${n} [OPTIONS] FILE"
   echo
-  echo "Options:"
-  echo "  ${b}-c${n} ${u}color${n}"
-  echo "        Color of the border."
-  echo "        Optional, default: white."
-  echo "  ${b}-w${n} ${u}width${n}"
-  echo "        Minimal width of the border, as a percentage of the original height (if the new aspect ratio is wider"
-  echo "        than the original one) or the original width (if the new aspect ratio is taller than the original one)."
-  echo "        Optional, default: 2."
-  echo "  ${b}-r${n} ${u}w${n}x${u}h${n}"
-  echo "        Aspect ratio of the new image in the format ${u}w${n}x${u}h${n}, for example: 2x3."
-  echo "        Optional, default: unchanged."
+  echo "${b}${u}Options:${n}"
+  echo "  ${b}-c${n} COLOR"
+  echo "        Set color of the border."
+  echo "        Default: white."
+  echo "  ${b}-w${n} WIDTH"
+  echo "        Set minimal width of the border, as a percentage of the original"
+  echo "        height (if the new aspect ratio is wider than the original one)"
+  echo "        or the original width (if the new aspect ratio is taller than the"
+  echo "        original one)."
+  echo "        Default: 2."
+  echo "  ${b}-r${n} RATIO"
+  echo "        Aspect ratio of the new image in the format ${b}w${n}x${b}h${n}, for example: 2x3."
+  echo "        Default: unchanged."
 }
 
 if ! [ -x "$(command -v magick)" ]; then

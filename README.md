@@ -5,21 +5,24 @@ A collection of photography-related command line utilities.
 ### Border
 
 ```text
-Adds a border to an image, and, optionally, converts the image to a different aspect ratio.
+Adds a border to an image, and, optionally, converts the image to a different
+aspect ratio.
 
-Usage: border [-c color] [-w width] [-r wxh] file
+Usage: border [OPTIONS] FILE
 
 Options:
-  -c color
-        Color of the border.
-        Optional, default: white.
-  -w width
-        Minimal width of the border, as a percentage of the original height (if the new aspect ratio is wider
-        than the original one) or the original width (if the new aspect ratio is taller than the original one).
-        Optional, default: 2.
-  -r wxh
+  -c COLOR
+        Set color of the border.
+        Default: white.
+  -w WIDTH
+        Set minimal width of the border, as a percentage of the original
+        height (if the new aspect ratio is wider than the original one)
+        or the original width (if the new aspect ratio is taller than the
+        original one).
+        Default: 2.
+  -r RATIO
         Aspect ratio of the new image in the format wxh, for example: 2x3.
-        Optional, default: unchanged.
+        Default: unchanged.
 ```
 
 ### Collage
@@ -27,7 +30,7 @@ Options:
 ```text
 Combines two images into a collage, separated and surrounded by a border.
 
-Usage: ../bin/collage [-c color] [-w width] [-r wxh] file
+Usage: collage [OPTIONS] FILE1 FILE2
 
 Options:
   -h
@@ -35,16 +38,17 @@ Options:
   -v
         Make a vertical collage.
 
-  If -h and -v are not set, portrait images will result in a horizontal collage, and landscape images in a
-  vertical one.
+        If -h and -v are not set, portrait images will result in a horizontal
+        collage, and landscape images in a vertical one.
 
-  -c color
-        Color of the border.
-        Optional, default: white.
-  -w width
-        Minimal width of the outer border, as a percentage of the original height (in case of a horizontal collage)
-        or the original width (in case of a vertical one).
-        Optional, default: 2.
+  -c COLOR
+        Set color of the border.
+        Default: white.
+  -w WIDTH
+        Set minimal width of the outer border, as a percentage of the original
+        height (in case of a horizontal collage) or the original width (in case
+        of a vertical one).
+        Default: 2.
 ```
 
 ## Installation

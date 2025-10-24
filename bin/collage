@@ -62,7 +62,7 @@ main() {
     fi
   fi
   
-  if [ $orientation == "h" ]; then
+  if [ "$orientation" == "h" ]; then
     if ((height1 < height2)); then
       height="$height1"
     else 
@@ -118,27 +118,27 @@ usage() {
   u=$(tput smul)
   n=$(tput sgr0)
   
-  echo "${b}${u}COLLAGE$n"
   echo "Combines two images into a collage, separated and surrounded by a border."
   echo
-  echo "Usage: $0 [${b}-c${n} ${u}color${n}] [${b}-w${n} ${u}width${n}] [${b}-r${n} ${u}w${n}x${u}h${n}] ${u}file${n}"
+  echo "${b}${u}Usage:${n} ${b}$(basename "$0")${n} [OPTIONS] FILE1 FILE2"
   echo
-  echo "Options:"
+  echo "${b}${u}Options:${n}"
   echo "  ${b}-h${n}"
   echo "        Make a horizontal collage." 
   echo "  ${b}-v${n}"
   echo "        Make a vertical collage."
   echo 
-  echo "  If ${b}-h${n} and ${b}-v${n} are not set, portrait images will result in a horizontal collage, and landscape images in a"
-  echo "  vertical one."
+  echo "        If ${b}-h${n} and ${b}-v${n} are not set, portrait images will result in a horizontal" 
+  echo "        collage, and landscape images in a vertical one."
   echo   
-  echo "  ${b}-c${n} ${u}color${n}"
-  echo "        Color of the border."
-  echo "        Optional, default: white."
-  echo "  ${b}-w${n} ${u}width${n}"
-  echo "        Minimal width of the outer border, as a percentage of the original height (in case of a horizontal collage)"
-  echo "        or the original width (in case of a vertical one)."
-  echo "        Optional, default: 2."
+  echo "  ${b}-c${n} COLOR"
+  echo "        Set color of the border."
+  echo "        Default: white."
+  echo "  ${b}-w${n} WIDTH"
+  echo "        Set minimal width of the outer border, as a percentage of the original"
+  echo "        height (in case of a horizontal collage) or the original width (in case"
+  echo "        of a vertical one)."
+  echo "        Default: 2."
 }
 
 if ! [ -x "$(command -v magick)" ]; then
